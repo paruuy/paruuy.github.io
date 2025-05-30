@@ -19,6 +19,7 @@
   <p>Scan and decrypt encrypted QR codes.</p>
 
   <button onclick="startScanner()">📷 Scan QR</button>
+  <button id="cancel-scan" class="hidden" onclick="cancelScanner()">❌ Cancel Scan</button>
   <div id="reader" class="hidden"></div>
   <p><strong>Decrypted message:</strong></p>
   <p id="output">---</p>
@@ -28,6 +29,8 @@
   <textarea id="input-msg" placeholder="Secret message (multi-line supported)"></textarea>
   <input id="input-key" placeholder="Password">
   <button onclick="generateQR()">🔐 Generate QR</button>
+  <button onclick="printQRCode()">🖨️ Print QR</button>
+  <br>
   <canvas id="qrcode"></canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -37,15 +40,19 @@
   <script>
     const readerDiv = document.getElementById('reader');
     const output = document.getElementById('output');
+    const cancelScanBtn = document.getElementById('cancel-scan');
+    let html5QrCode;
 
     function startScanner() {
       readerDiv.classList.remove('hidden');
-      const html5QrCode = new Html5Qrcode("reader");
+      cancelScanBtn.classList.remove('hidden');
+      html5QrCode = new Html5Qrcode("reader");
       html5QrCode.start({ facingMode: "environment" }, {
         fps: 10, qrbox: 250
       }, qrCodeMessage => {
         html5QrCode.stop();
         readerDiv.classList.add('hidden');
+        cancelScanBtn.classList.add('hidden');
         try {
           const key = prompt("Enter password to decrypt:");
           const bytes = CryptoJS.AES.decrypt(qrCodeMessage, key);
@@ -57,11 +64,29 @@
       });
     }
 
+    function cancelScanner() {
+      if (html5QrCode) {
+        html5QrCode.stop().then(() => {
+          readerDiv.classList.add('hidden');
+          cancelScanBtn.classList.add('hidden');
+        }).catch(err => {
+          console.error('Failed to stop QR code scanner', err);
+        });
+      }
+    }
+
     function generateQR() {
       const msg = document.getElementById('input-msg').value;
       const key = document.getElementById('input-key').value;
       const encrypted = CryptoJS.AES.encrypt(msg, key).toString();
       QRCode.toCanvas(document.getElementById('qrcode'), encrypted);
+    }
+
+    function printQRCode() {
+      const canvas = document.getElementById('qrcode');
+      const dataUrl = canvas.toDataURL();
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(`<img src="${dataUrl}" onload="window.print();window.close()">`);
     }
   </script>
 </body>
