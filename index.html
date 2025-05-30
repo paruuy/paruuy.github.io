@@ -1,32 +1,33 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR Secreto</title>
+  <title>Secret QR</title>
   <meta name="theme-color" content="#000000" />
   <link rel="manifest" href="manifest.json">
   <style>
     body { font-family: sans-serif; text-align: center; padding: 2rem; }
     video { width: 100%; max-width: 400px; margin: 1rem auto; }
-    input, button { margin: 0.5rem; padding: 0.5rem; }
+    textarea, input, button { margin: 0.5rem; padding: 0.5rem; }
+    textarea { width: 100%; max-width: 400px; height: 100px; }
     .hidden { display: none; }
   </style>
 </head>
 <body>
-  <h1>QR Secreto</h1>
-  <p>Leia e decifre QR codes secretos.</p>
+  <h1>Secret QR</h1>
+  <p>Scan and decrypt encrypted QR codes.</p>
 
-  <button onclick="startScanner()">📷 Escanear QR</button>
+  <button onclick="startScanner()">📷 Scan QR</button>
   <div id="reader" class="hidden"></div>
-  <p><strong>Mensagem decifrada:</strong></p>
+  <p><strong>Decrypted message:</strong></p>
   <p id="output">---</p>
 
   <hr>
-  <h2>Gerar QR Criptografado</h2>
-  <input id="input-msg" placeholder="Mensagem secreta">
-  <input id="input-key" placeholder="Senha">
-  <button onclick="generateQR()">🔐 Gerar QR</button>
+  <h2>Generate Encrypted QR Code</h2>
+  <textarea id="input-msg" placeholder="Secret message (multi-line supported)"></textarea>
+  <input id="input-key" placeholder="Password">
+  <button onclick="generateQR()">🔐 Generate QR</button>
   <canvas id="qrcode"></canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -46,12 +47,12 @@
         html5QrCode.stop();
         readerDiv.classList.add('hidden');
         try {
-          const key = prompt("Digite a senha para decifrar:");
+          const key = prompt("Enter password to decrypt:");
           const bytes = CryptoJS.AES.decrypt(qrCodeMessage, key);
           const originalText = bytes.toString(CryptoJS.enc.Utf8);
-          output.innerText = originalText || "Mensagem inválida ou senha incorreta.";
+          output.innerText = originalText || "Invalid message or wrong password.";
         } catch (e) {
-          output.innerText = "Erro na leitura.";
+          output.innerText = "Error reading QR code.";
         }
       });
     }
